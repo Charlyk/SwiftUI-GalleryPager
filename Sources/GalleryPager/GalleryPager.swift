@@ -65,6 +65,7 @@ public struct GalleryPagerView: View {
                         .fill(.black.opacity(0.6))
                 )
                 .padding(.horizontal)
+                .padding(.vertical, 16)
         }
         .buttonStyle(.plain)
     }
