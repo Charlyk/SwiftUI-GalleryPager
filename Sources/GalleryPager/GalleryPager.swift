@@ -21,21 +21,23 @@ public struct GalleryPagerView: View {
     
     public var body: some View {
         ZStack(alignment: .topLeading) {
-            TabView(selection: $currentImage) {
-                ForEach(0..<imagesUrl.count, id: \.self) { imageIndex in
-                    KFImage(imagesUrl[imageIndex])
-                        .setProcessor(ImageSizeProcessor(imageSize: $imageSize))
-                        .gesturesHandler(
-                            contentSize: .init(
-                                width: imageSize.width,
-                                height: imageSize.height
+            GeometryReader { geometry in
+                TabView(selection: $currentImage) {
+                    ForEach(0..<imagesUrl.count, id: \.self) { imageIndex in
+                        KFImage(imagesUrl[imageIndex])
+                            .setProcessor(ImageSizeProcessor(imageSize: $imageSize))
+                            .gesturesHandler(
+                                contentSize: .init(
+                                    width: calculateSize(frameSize: geometry.size).width,
+                                    height: calculateSize(frameSize: geometry.size).height
+                                )
                             )
-                        )
-                        .tag(imageIndex)
+                            .tag(imageIndex)
+                    }
                 }
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
             }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-            .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
             
             closeImageButton
         }
@@ -68,6 +70,19 @@ public struct GalleryPagerView: View {
                 .padding(.vertical, 16)
         }
         .buttonStyle(.plain)
+    }
+    
+    private func calculateSize(frameSize: CGSize) -> (width: CGFloat, height: CGFloat) {
+        if imageSize == .zero {
+            return (width: .zero, height: .zero)
+        }
+        
+        let ratio = max(frameSize.width / imageSize.width, frameSize.height / imageSize.height)
+        
+        return (
+            width: imageSize.width * ratio,
+            height: imageSize.height * ratio
+        )
     }
 }
 
