@@ -72,17 +72,18 @@ public struct GalleryPagerView: View {
         .buttonStyle(.plain)
     }
     
-    private func calculateSize(frameSize: CGSize) -> (width: CGFloat, height: CGFloat) {
+    private func calculateSize(frameSize: CGSize) -> CGSize {
         if imageSize == .zero {
-            return (width: .zero, height: .zero)
+            return .zero
         }
         
-        let ratio = max(frameSize.width / imageSize.width, frameSize.height / imageSize.height)
+        let widthRatio = frameSize.width / imageSize.width
+        let heightRatio = frameSize.height / imageSize.height
         
-        return (
-            width: imageSize.width * ratio,
-            height: imageSize.height * ratio
-        )
+        let scaleFactor = min(widthRatio, heightRatio)
+        let scaledSize = CGSize(width: imageSize.width * scaleFactor, height: imageSize.height * scaleFactor)
+        
+        return scaledSize
     }
 }
 
