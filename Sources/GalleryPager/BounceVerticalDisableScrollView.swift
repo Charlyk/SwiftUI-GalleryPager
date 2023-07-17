@@ -20,8 +20,8 @@ struct BounceVerticalDisableScrollView<Content: View>: View {
     }
     
     var body: some View {
-        GeometryReader { scrlViewGeometry in
-            ScrollView(axes, showsIndicators: showsIndicators) {
+        ScrollView(axes, showsIndicators: showsIndicators) {
+            GeometryReader { scrlViewGeometry in
                 content
                     .background(
                         GeometryReader {
