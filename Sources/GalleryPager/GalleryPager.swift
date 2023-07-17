@@ -4,6 +4,7 @@ import Kingfisher
 public struct GalleryPagerView: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var currentImage: Int = 0
+    @State private var imageSize: CGSize = .zero
     private let imagesUrl: [URL]
     private var startIndex: Int = 0
     
@@ -20,22 +21,21 @@ public struct GalleryPagerView: View {
     
     public var body: some View {
         ZStack(alignment: .topLeading) {
-            GeometryReader { proxy in
-                TabView(selection: $currentImage) {
-                    ForEach(0..<imagesUrl.count, id: \.self) { imageIndex in
-                        KFImage(imagesUrl[imageIndex])
-                            .gesturesHandler(
-                                contentSize: .init(
-                                    width: proxy.size.width,
-                                    height: proxy.size.height
-                                )
+            TabView(selection: $currentImage) {
+                ForEach(0..<imagesUrl.count, id: \.self) { imageIndex in
+                    KFImage(imagesUrl[imageIndex])
+                        .gesturesHandler(
+                            contentSize: .init(
+                                width: imageSize.width,
+                                height: imageSize.height
                             )
-                            .tag(imageIndex)
-                    }
+                        )
+                        .measure($imageSize)
+                        .tag(imageIndex)
                 }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
             }
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+            .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
             
             closeImageButton
         }
@@ -68,5 +68,18 @@ public struct GalleryPagerView: View {
                 .padding(.vertical, 16)
         }
         .buttonStyle(.plain)
+    }
+}
+
+extension View {
+    @ViewBuilder
+    public func measure(_ size: Binding<CGSize>) -> some View {
+        self.background(
+            GeometryReader { proxy in
+                Color.clear.onAppear {
+                    size.wrappedValue = proxy.size
+                }
+            }
+        )
     }
 }
