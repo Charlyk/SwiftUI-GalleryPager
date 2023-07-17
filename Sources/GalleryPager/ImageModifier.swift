@@ -25,7 +25,7 @@ struct ImageModifier: ViewModifier {
     }
     
     func body(content: Content) -> some View {
-        ScrollView([.horizontal, .vertical], showsIndicators: false) {
+        BounceVerticalDisableScrollView([.horizontal, .vertical], showsIndicators: false) {
             content
                 .frame(
                     width: contentSize.width * currentScale,
