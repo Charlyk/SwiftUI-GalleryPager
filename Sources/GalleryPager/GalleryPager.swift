@@ -25,7 +25,7 @@ public struct GalleryPagerView: View {
                 TabView(selection: $currentImage) {
                     ForEach(0..<imagesUrl.count, id: \.self) { imageIndex in
                         KFImage(imagesUrl[imageIndex])
-                            .setProcessor(ImageSizeProcessor(imageSize: $imageSize))
+                            .appendProcessor(ImageSizeProcessor(imageSize: $imageSize))
                             .gesturesHandler(
                                 contentSize: .init(
                                     width: calculateSize(frameSize: geometry.size).width,
