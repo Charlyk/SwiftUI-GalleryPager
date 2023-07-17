@@ -24,13 +24,13 @@ public struct GalleryPagerView: View {
             TabView(selection: $currentImage) {
                 ForEach(0..<imagesUrl.count, id: \.self) { imageIndex in
                     KFImage(imagesUrl[imageIndex])
+                        .setProcessor(ImageSizeProcessor(imageSize: $imageSize))
                         .gesturesHandler(
                             contentSize: .init(
                                 width: imageSize.width,
                                 height: imageSize.height
                             )
                         )
-                        .measure($imageSize)
                         .tag(imageIndex)
                 }
             }
@@ -68,6 +68,26 @@ public struct GalleryPagerView: View {
                 .padding(.vertical, 16)
         }
         .buttonStyle(.plain)
+    }
+}
+
+struct ImageSizeProcessor: ImageProcessor {
+    var identifier: String = "io.swifted.software.ImageSizeProcessor"
+    var imageSize: Binding<CGSize>
+    
+    func process(item: Kingfisher.ImageProcessItem, options: Kingfisher.KingfisherParsedOptionsInfo) -> Kingfisher.KFCrossPlatformImage? {
+        switch item {
+        case .image(let kFCrossPlatformImage):
+            imageSize.wrappedValue = kFCrossPlatformImage.size
+            return kFCrossPlatformImage
+        case .data(let data):
+            let image = KFCrossPlatformImage(data: data)
+            if let image = image {
+                imageSize.wrappedValue = image.size
+            }
+            
+            return image
+        }
     }
 }
 
