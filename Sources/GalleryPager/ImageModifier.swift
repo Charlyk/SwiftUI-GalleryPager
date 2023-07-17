@@ -1,12 +1,14 @@
 import SwiftUI
 import UIKit
 import Kingfisher
+import SwiftUIIntrospect
 
 struct ImageModifier: ViewModifier {
     private var contentSize: CGSize
     private var min: CGFloat = 1.0
     private var max: CGFloat = 3.0
     @State var currentScale: CGFloat = 1.0
+    @State private var alwaysBounceVertical = false
 
     init(contentSize: CGSize) {
         self.contentSize = contentSize
@@ -25,7 +27,7 @@ struct ImageModifier: ViewModifier {
     }
     
     func body(content: Content) -> some View {
-        BounceVerticalDisableScrollView([.horizontal, .vertical], showsIndicators: false) {
+        ScrollView([.horizontal, .vertical], showsIndicators: false) {
             content
                 .frame(
                     width: contentSize.width * currentScale,
@@ -41,6 +43,9 @@ struct ImageModifier: ViewModifier {
         }
         .gesture(doubleTapGesture)
         .animation(.easeInOut, value: currentScale)
+        .introspect(.scrollView, on: .iOS(.v14, .v15, .v16, .v17)) { scrollView in
+            scrollView.alwaysBounceVertical = false
+        }
     }
 }
 
