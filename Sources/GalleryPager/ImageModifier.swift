@@ -54,6 +54,7 @@ class PinchZoomView: UIView {
     let maxScale: CGFloat
     var isPinching: Bool = false
     var scale: CGFloat = 1.0
+    var startScale: CGFloat = 1.0
     let scaleChange: (CGFloat) -> Void
     
     init(minScale: CGFloat,
@@ -78,19 +79,23 @@ class PinchZoomView: UIView {
         switch gesture.state {
         case .began:
             isPinching = true
-            
+            startScale = scale // Capture the current scale at the start of the pinch
         case .changed, .ended:
-            if gesture.scale <= minScale {
+            let adjustedScale = startScale * gesture.scale // Apply the pinch changes relative to the startScale
+            if adjustedScale <= minScale {
                 scale = minScale
-            } else if gesture.scale >= maxScale {
+            } else if adjustedScale >= maxScale {
                 scale = maxScale
             } else {
-                scale = gesture.scale
+                scale = adjustedScale
             }
             scaleChange(scale)
+            if gesture.state == .ended {
+                startScale = scale // Update the startScale at the end of the pinch
+            }
         case .cancelled, .failed:
             isPinching = false
-            scale = 1.0
+            scale = startScale // Reset to startScale, not to 1.0
         default:
             break
         }
