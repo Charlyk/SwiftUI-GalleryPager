@@ -42,6 +42,9 @@ public struct GalleryPagerView: View {
             }
             
             closeImageButton
+            
+            actionsContainer
+                .frame(alignment: .bottom)
         }
         .background(Color.black.edgesIgnoringSafeArea(.all))
         .onAppear {
@@ -50,6 +53,19 @@ public struct GalleryPagerView: View {
             } else {
                 self.currentImage = 0
             }
+        }
+    }
+    
+    @ViewBuilder
+    private var actionsContainer: some View {
+        Button {
+            
+        } label: {
+            Image(systemName: "square.and.arrow.up")
+                .resizable()
+                .renderingMode(.template)
+                .foregroundColor(.white)
+                .padding(0)
         }
     }
     
