@@ -77,6 +77,8 @@ public struct GalleryPagerView: View {
                     actionableItem.action(imagesUrl[currentImage], currentImage)
                 } label: {
                     HStack {
+                        Spacer()
+                        
                         if let title = actionableItem.title {
                             Text(title)
                                 .font(.system(size: 14).bold())
@@ -89,6 +91,8 @@ public struct GalleryPagerView: View {
                             .foregroundColor(.white)
                             .frame(width: 35, height: 35, alignment: .center)
                             .padding(0)
+                        
+                        Spacer()
                     }
                 }
                 
