@@ -40,12 +40,9 @@ public struct GalleryPagerView: View {
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
             }
-            
-            closeImageButton
-            
-            actionsContainer
-                .frame(alignment: .bottom)
         }
+        .overlay(closeImageButton, alignment: .topLeading)
+        .overlay(actionsContainer, alignment: .bottom)
         .background(Color.black.edgesIgnoringSafeArea(.all))
         .onAppear {
             if imagesUrl.count > startIndex {
@@ -65,6 +62,7 @@ public struct GalleryPagerView: View {
                 Image(systemName: "square.and.arrow.up")
                     .resizable()
                     .renderingMode(.template)
+                    .aspectRatio(contentMode: .fit)
                     .foregroundColor(.white)
                     .frame(width: 35, height: 35, alignment: .center)
                     .padding(0)
@@ -78,15 +76,18 @@ public struct GalleryPagerView: View {
                 Image(systemName: "square.and.arrow.up")
                     .resizable()
                     .renderingMode(.template)
+                    .aspectRatio(contentMode: .fit)
                     .foregroundColor(.white)
                     .frame(width: 35, height: 35, alignment: .center)
                     .padding(0)
             }
         }
         .foregroundColor(.white)
+        .frame(height: 50)
         .background(
             Rectangle()
                 .fill(.black.opacity(0.6))
+                .edgesIgnoringSafeArea(.bottom)
         )
     }
     
