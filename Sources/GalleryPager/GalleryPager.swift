@@ -58,15 +58,36 @@ public struct GalleryPagerView: View {
     
     @ViewBuilder
     private var actionsContainer: some View {
-        Button {
+        HStack {
+            Button {
+                
+            } label: {
+                Image(systemName: "square.and.arrow.up")
+                    .resizable()
+                    .renderingMode(.template)
+                    .foregroundColor(.white)
+                    .frame(width: 35, height: 35, alignment: .center)
+                    .padding(0)
+            }
             
-        } label: {
-            Image(systemName: "square.and.arrow.up")
-                .resizable()
-                .renderingMode(.template)
-                .foregroundColor(.white)
-                .padding(0)
+            Divider()
+            
+            Button {
+                
+            } label: {
+                Image(systemName: "square.and.arrow.up")
+                    .resizable()
+                    .renderingMode(.template)
+                    .foregroundColor(.white)
+                    .frame(width: 35, height: 35, alignment: .center)
+                    .padding(0)
+            }
         }
+        .foregroundColor(.white)
+        .background(
+            Rectangle()
+                .fill(.black.opacity(0.6))
+        )
     }
     
     @ViewBuilder
