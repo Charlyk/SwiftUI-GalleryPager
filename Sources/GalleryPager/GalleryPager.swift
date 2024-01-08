@@ -89,6 +89,7 @@ public struct GalleryPagerView: View {
                             .renderingMode(.template)
                             .aspectRatio(contentMode: .fit)
                             .foregroundColor(.white)
+                            .padding(8)
                             .frame(width: 35, height: 35, alignment: .center)
                             .padding(0)
                         
