@@ -1,10 +1,24 @@
 import SwiftUI
 import Kingfisher
 
+public struct ActionableItem: Identifiable {
+    public var id: UUID = UUID()
+    public var title: String?
+    public var systemImage: String
+    public var action: (URL, Int) -> Void
+    
+    init(title: String? = nil, systemImage: String, action: @escaping (URL, Int) -> Void) {
+        self.title = title
+        self.systemImage = systemImage
+        self.action = action
+    }
+}
+
 public struct GalleryPagerView: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var currentImage: Int = 0
     @State private var imageSize: CGSize = .zero
+    private let actionableItems: [ActionableItem] = []
     private let imagesUrl: [URL]
     private var startIndex: Int = 0
     
@@ -55,35 +69,31 @@ public struct GalleryPagerView: View {
     
     @ViewBuilder
     private var actionsContainer: some View {
-        HStack {
-            Button {
-                
-            } label: {
-                Image(systemName: "square.and.arrow.up")
-                    .resizable()
-                    .renderingMode(.template)
-                    .aspectRatio(contentMode: .fit)
-                    .foregroundColor(.white)
-                    .frame(width: 35, height: 35, alignment: .center)
-                    .padding(0)
-            }
-            
-            Divider()
-            
-            Button {
-                
-            } label: {
-                Image(systemName: "square.and.arrow.up")
-                    .resizable()
-                    .renderingMode(.template)
-                    .aspectRatio(contentMode: .fit)
-                    .foregroundColor(.white)
-                    .frame(width: 35, height: 35, alignment: .center)
-                    .padding(0)
+        HStack(alignment: .center, spacing: 8) {
+            ForEach(actionableItems) { actionableItem in
+                Button {
+                    actionableItem.action(imagesUrl[currentImage], currentImage)
+                } label: {
+                    HStack {
+                        if let title = actionableItem.title {
+                            Text(title)
+                                .font(.system(size: 14).bold())
+                        }
+                        
+                        Image(systemName: actionableItem.systemImage)
+                            .resizable()
+                            .renderingMode(.template)
+                            .aspectRatio(contentMode: .fit)
+                            .foregroundColor(.white)
+                            .frame(width: 35, height: 35, alignment: .center)
+                            .padding(0)
+                    }
+                }
             }
         }
         .foregroundColor(.white)
         .frame(height: 50)
+        .frame(maxWidth: .infinity)
         .background(
             Rectangle()
                 .fill(.black.opacity(0.6))
