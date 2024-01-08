@@ -128,7 +128,7 @@ public struct GalleryPagerView: View {
                 .resizable()
                 .renderingMode(.template)
                 .foregroundColor(.white)
-                .padding(8)
+                .padding(6)
                 .frame(width: 35, height: 35, alignment: .center)
                 .background(
                     RoundedRectangle(cornerRadius: 17)
