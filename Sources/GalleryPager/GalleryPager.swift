@@ -70,7 +70,9 @@ public struct GalleryPagerView: View {
     @ViewBuilder
     private var actionsContainer: some View {
         HStack(alignment: .center, spacing: 8) {
-            ForEach(actionableItems) { actionableItem in
+            ForEach(0..<actionableItems.count, id: \.self) { index in
+                let actionableItem = actionableItems[index]
+                
                 Button {
                     actionableItem.action(imagesUrl[currentImage], currentImage)
                 } label: {
@@ -88,6 +90,16 @@ public struct GalleryPagerView: View {
                             .frame(width: 35, height: 35, alignment: .center)
                             .padding(0)
                     }
+                }
+                
+                if index < (actionableItems.count - 1) {
+                    Spacer()
+                    
+                    Divider()
+                        .background(Color.white)
+                        .padding(.vertical, 6)
+                    
+                    Spacer()
                 }
             }
         }
