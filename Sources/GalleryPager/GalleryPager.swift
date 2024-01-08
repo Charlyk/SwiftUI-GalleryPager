@@ -1,33 +1,20 @@
 import SwiftUI
 import Kingfisher
 
-public struct ActionableItem: Identifiable {
-    public var id: UUID = UUID()
-    public var title: String?
-    public var systemImage: String
-    public var action: (URL, Int) -> Void
-    
-    public init(title: String? = nil, systemImage: String, action: @escaping (URL, Int) -> Void) {
-        self.title = title
-        self.systemImage = systemImage
-        self.action = action
-    }
-}
-
 public struct GalleryPagerView: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var currentImage: Int = 0
     @State private var imageSize: CGSize = .zero
-    private var actionableItems: [ActionableItem] = []
+    private var actionableItems: [AnyView] = []
     private let imagesUrl: [URL]
     private var startIndex: Int = 0
     
-    public init(imagesUrl: [String], startIndex: Int = 0, actions: [ActionableItem] = []) {
+    public init(imagesUrl: [String], startIndex: Int = 0, actions: [AnyView] = []) {
         let urls = imagesUrl.compactMap({ URL(string: $0) })
         self.init(imagesUrl: urls, startIndex: startIndex, actions: actions)
     }
     
-    public init(imagesUrl: [URL], startIndex: Int = 0, actions: [ActionableItem] = []) {
+    public init(imagesUrl: [URL], startIndex: Int = 0, actions: [AnyView] = []) {
         self.imagesUrl = imagesUrl
         self.startIndex = startIndex
         self.actionableItems = actions
@@ -73,29 +60,7 @@ public struct GalleryPagerView: View {
             ForEach(0..<actionableItems.count, id: \.self) { index in
                 let actionableItem = actionableItems[index]
                 
-                Button {
-                    actionableItem.action(imagesUrl[currentImage], currentImage)
-                } label: {
-                    HStack {
-                        Spacer()
-                        
-                        if let title = actionableItem.title {
-                            Text(title)
-                                .font(.system(size: 14).bold())
-                        }
-                        
-                        Image(systemName: actionableItem.systemImage)
-                            .resizable()
-                            .renderingMode(.template)
-                            .aspectRatio(contentMode: .fit)
-                            .foregroundColor(.white)
-                            .padding(6)
-                            .frame(width: 35, height: 35, alignment: .center)
-                            .padding(0)
-                        
-                        Spacer()
-                    }
-                }
+                actionableItem
                 
                 if index < (actionableItems.count - 1) {
                     Spacer()
