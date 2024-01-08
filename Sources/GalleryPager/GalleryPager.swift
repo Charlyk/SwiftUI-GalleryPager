@@ -5,19 +5,32 @@ public struct GalleryPagerView: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var currentImage: Int = 0
     @State private var imageSize: CGSize = .zero
-    private var actionableItems: [AnyView] = []
+    private var footerContent: ((URL) -> AnyView)?
     private let imagesUrl: [URL]
     private var startIndex: Int = 0
     
-    public init(imagesUrl: [String], startIndex: Int = 0, actions: [AnyView] = []) {
+    public init(imagesUrl: [String], startIndex: Int = 0) {
         let urls = imagesUrl.compactMap({ URL(string: $0) })
-        self.init(imagesUrl: urls, startIndex: startIndex, actions: actions)
+        self.init(imagesUrl: urls, startIndex: startIndex)
     }
     
-    public init(imagesUrl: [URL], startIndex: Int = 0, actions: [AnyView] = []) {
+    public init(imagesUrl: [String], startIndex: Int = 0, @ViewBuilder footerContent: @escaping (URL) -> some View) {
+        let urls = imagesUrl.compactMap({ URL(string: $0) })
+        self.init(imagesUrl: urls, startIndex: startIndex, footerContent: footerContent)
+    }
+    
+    public init(imagesUrl: [URL], startIndex: Int = 0) {
         self.imagesUrl = imagesUrl
         self.startIndex = startIndex
-        self.actionableItems = actions
+        self.footerContent = nil
+    }
+    
+    public init(imagesUrl: [URL], startIndex: Int = 0, @ViewBuilder footerContent: @escaping (URL) -> some View) {
+        self.imagesUrl = imagesUrl
+        self.startIndex = startIndex
+        self.footerContent = { url in
+            AnyView(footerContent(url))
+        }
     }
     
     public var body: some View {
@@ -56,32 +69,20 @@ public struct GalleryPagerView: View {
     
     @ViewBuilder
     private var actionsContainer: some View {
-        HStack(alignment: .center, spacing: 8) {
-            ForEach(0..<actionableItems.count, id: \.self) { index in
-                let actionableItem = actionableItems[index]
-                
-                actionableItem
-                
-                if index < (actionableItems.count - 1) {
-                    Spacer()
-                    
-                    Divider()
-                        .background(Color.white)
-                        .padding(.vertical, 8)
-                    
-                    Spacer()
-                }
+        if let footerContent {
+            HStack(alignment: .center, spacing: 8) {
+                footerContent(imagesUrl[currentImage])
             }
+            .foregroundColor(.white)
+            .frame(height: 50)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal)
+            .background(
+                Rectangle()
+                    .fill(.black.opacity(0.8))
+                    .edgesIgnoringSafeArea(.bottom)
+            )
         }
-        .foregroundColor(.white)
-        .frame(height: 50)
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal)
-        .background(
-            Rectangle()
-                .fill(.black.opacity(0.8))
-                .edgesIgnoringSafeArea(.bottom)
-        )
     }
     
     @ViewBuilder
