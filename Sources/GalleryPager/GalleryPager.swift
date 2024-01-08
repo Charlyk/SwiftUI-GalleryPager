@@ -7,7 +7,7 @@ public struct ActionableItem: Identifiable {
     public var systemImage: String
     public var action: (URL, Int) -> Void
     
-    init(title: String? = nil, systemImage: String, action: @escaping (URL, Int) -> Void) {
+    public init(title: String? = nil, systemImage: String, action: @escaping (URL, Int) -> Void) {
         self.title = title
         self.systemImage = systemImage
         self.action = action
