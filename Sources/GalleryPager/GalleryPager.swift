@@ -18,19 +18,19 @@ public struct GalleryPagerView: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var currentImage: Int = 0
     @State private var imageSize: CGSize = .zero
-    private let actionableItems: [ActionableItem] = []
+    private var actionableItems: [ActionableItem] = []
     private let imagesUrl: [URL]
     private var startIndex: Int = 0
     
-    public init(imagesUrl: [String], startIndex: Int = 0) {
+    public init(imagesUrl: [String], startIndex: Int = 0, actions: [ActionableItem]) {
         let urls = imagesUrl.compactMap({ URL(string: $0) })
-        self.imagesUrl = urls
-        self.startIndex = startIndex
+        self.init(imagesUrl: urls, startIndex: startIndex, actions: actions)
     }
     
-    public init(imagesUrl: [URL], startIndex: Int = 0) {
+    public init(imagesUrl: [URL], startIndex: Int = 0, actions: [ActionableItem] = []) {
         self.imagesUrl = imagesUrl
         self.startIndex = startIndex
+        self.actionableItems = actions
     }
     
     public var body: some View {
