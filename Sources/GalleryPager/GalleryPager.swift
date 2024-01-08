@@ -97,7 +97,7 @@ public struct GalleryPagerView: View {
                     
                     Divider()
                         .background(Color.white)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, 8)
                     
                     Spacer()
                 }
@@ -106,9 +106,10 @@ public struct GalleryPagerView: View {
         .foregroundColor(.white)
         .frame(height: 50)
         .frame(maxWidth: .infinity)
+        .padding(.horizontal)
         .background(
             Rectangle()
-                .fill(.black.opacity(0.6))
+                .fill(.black.opacity(0.8))
                 .edgesIgnoringSafeArea(.bottom)
         )
     }
