@@ -22,7 +22,7 @@ public struct GalleryPagerView: View {
     private let imagesUrl: [URL]
     private var startIndex: Int = 0
     
-    public init(imagesUrl: [String], startIndex: Int = 0, actions: [ActionableItem]) {
+    public init(imagesUrl: [String], startIndex: Int = 0, actions: [ActionableItem] = []) {
         let urls = imagesUrl.compactMap({ URL(string: $0) })
         self.init(imagesUrl: urls, startIndex: startIndex, actions: actions)
     }
