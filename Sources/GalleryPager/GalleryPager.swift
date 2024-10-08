@@ -8,26 +8,54 @@ public struct GalleryPagerView: View {
     private var footerContent: ((URL) -> AnyView)?
     private let imagesUrl: [URL]
     private var startIndex: Int = 0
+    private var showCloseButton: Bool = true
+    private var backgroundColor: Color = .black
     
-    public init(imagesUrl: [String], startIndex: Int = 0) {
+    public init(
+        imagesUrl: [String],
+        startIndex: Int = 0,
+        showCloseButton: Bool = true,
+        backgroundColor: Color = .black
+    ) {
         let urls = imagesUrl.compactMap({ URL(string: $0) })
-        self.init(imagesUrl: urls, startIndex: startIndex)
+        self.init(imagesUrl: urls, startIndex: startIndex, showCloseButton: showCloseButton, backgroundColor: backgroundColor)
     }
     
-    public init(imagesUrl: [String], startIndex: Int = 0, @ViewBuilder footerContent: @escaping (URL) -> some View) {
+    public init(
+        imagesUrl: [String],
+        startIndex: Int = 0,
+        showCloseButton: Bool = true,
+        backgroundColor: Color = .black,
+        @ViewBuilder footerContent: @escaping (URL) -> some View
+    ) {
         let urls = imagesUrl.compactMap({ URL(string: $0) })
-        self.init(imagesUrl: urls, startIndex: startIndex, footerContent: footerContent)
+        self.init(imagesUrl: urls, startIndex: startIndex, showCloseButton: showCloseButton, backgroundColor: backgroundColor, footerContent: footerContent)
     }
     
-    public init(imagesUrl: [URL], startIndex: Int = 0) {
+    public init(
+        imagesUrl: [URL],
+        startIndex: Int = 0,
+        showCloseButton: Bool = true,
+        backgroundColor: Color = .black
+    ) {
         self.imagesUrl = imagesUrl
         self.startIndex = startIndex
         self.footerContent = nil
+        self.showCloseButton = showCloseButton
+        self.backgroundColor = backgroundColor
     }
     
-    public init(imagesUrl: [URL], startIndex: Int = 0, @ViewBuilder footerContent: @escaping (URL) -> some View) {
+    public init(
+        imagesUrl: [URL],
+        startIndex: Int = 0,
+        showCloseButton: Bool = true,
+        backgroundColor: Color = .black,
+        @ViewBuilder footerContent: @escaping (URL) -> some View
+    ) {
         self.imagesUrl = imagesUrl
         self.startIndex = startIndex
+        self.showCloseButton = showCloseButton
+        self.backgroundColor = backgroundColor
         self.footerContent = { url in
             AnyView(footerContent(url))
         }
@@ -55,9 +83,9 @@ public struct GalleryPagerView: View {
                 .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
             }
         }
-        .overlay(closeImageButton, alignment: .topLeading)
+        .if(showCloseButton) { $0.overlay(closeImageButton, alignment: .topLeading) }
         .overlay(actionsContainer, alignment: .bottom)
-        .background(Color.black.edgesIgnoringSafeArea(.all))
+        .background(backgroundColor.edgesIgnoringSafeArea(.all))
         .onAppear {
             if imagesUrl.count > startIndex {
                 self.currentImage = startIndex
