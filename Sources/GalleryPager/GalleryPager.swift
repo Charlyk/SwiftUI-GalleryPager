@@ -47,6 +47,7 @@ public struct GalleryPagerView: View {
     self.footerContent = nil
     self.showCloseButton = showCloseButton
     self.backgroundColor = backgroundColor
+    self.onIndexChange = onIndexChange
   }
 
   public init(
@@ -61,6 +62,7 @@ public struct GalleryPagerView: View {
     self.startIndex = startIndex
     self.showCloseButton = showCloseButton
     self.backgroundColor = backgroundColor
+    self.onIndexChange = onIndexChange
     self.footerContent = { url in
       AnyView(footerContent(url))
     }
