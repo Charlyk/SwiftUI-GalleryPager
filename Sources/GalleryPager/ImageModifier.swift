@@ -90,12 +90,14 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
 // MARK: - ImageModifier
 struct ImageModifier: ViewModifier {
     private var contentSize: CGSize
+    private var containerSize: CGSize
     private var min: CGFloat = 1.0
     private var max: CGFloat = 3.0
     @State var currentScale: CGFloat = 1.0
 
-    init(contentSize: CGSize) {
+    init(contentSize: CGSize, containerSize: CGSize) {
         self.contentSize = contentSize
+        self.containerSize = containerSize
     }
 
     var doubleTapGesture: some Gesture {
@@ -118,7 +120,7 @@ struct ImageModifier: ViewModifier {
             minScale: min,
             maxScale: max
         )
-        .frame(width: contentSize.width, height: contentSize.height)
+        .frame(width: containerSize.width, height: containerSize.height)
         .gesture(doubleTapGesture)
     }
 }
@@ -126,10 +128,10 @@ struct ImageModifier: ViewModifier {
 // MARK: - KFImage Extension
 extension KFImage {
     @ViewBuilder
-    func gesturesHandler(contentSize: CGSize) -> some View {
+    func gesturesHandler(contentSize: CGSize, containerSize: CGSize) -> some View {
         self
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .modifier(ImageModifier(contentSize: contentSize))
+            .modifier(ImageModifier(contentSize: contentSize, containerSize: containerSize))
     }
 }

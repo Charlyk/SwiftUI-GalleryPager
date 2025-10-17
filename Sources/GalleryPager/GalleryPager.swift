@@ -81,7 +81,8 @@ public struct GalleryPagerView: View {
                 contentSize: .init(
                   width: calculateSize(frameSize: geometry.size).width,
                   height: calculateSize(frameSize: geometry.size).height
-                )
+                ),
+                containerSize: geometry.size
               )
               .tag(imageIndex)
           }
