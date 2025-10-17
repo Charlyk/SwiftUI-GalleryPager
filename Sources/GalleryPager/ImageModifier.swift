@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 import Kingfisher
 import SwiftUIIntrospect
 
@@ -8,12 +7,13 @@ struct ImageModifier: ViewModifier {
     private var min: CGFloat = 1.0
     private var max: CGFloat = 3.0
     @State var currentScale: CGFloat = 1.0
+    @State var anchor: UnitPoint = .center
     @State private var alwaysBounceVertical = false
 
     init(contentSize: CGSize) {
         self.contentSize = contentSize
     }
-    
+
     var doubleTapGesture: some Gesture {
         TapGesture(count: 2).onEnded {
             if currentScale <= min {
@@ -25,7 +25,7 @@ struct ImageModifier: ViewModifier {
             }
         }
     }
-    
+
     func body(content: Content) -> some View {
         ScrollView([.horizontal, .vertical], showsIndicators: false) {
             content
@@ -33,6 +33,7 @@ struct ImageModifier: ViewModifier {
                     minScale: min,
                     maxScale: max,
                     scale: $currentScale,
+                    anchor: $anchor,
                     contentSize: contentSize
                 ))
         }
@@ -44,115 +45,52 @@ struct ImageModifier: ViewModifier {
     }
 }
 
-class PinchZoomView: UIView {
-    let minScale: CGFloat
-    let maxScale: CGFloat
-    var isPinching: Bool = false
-    var scale: CGFloat = 1.0
-    var startScale: CGFloat = 1.0
-    let scaleChange: (CGFloat) -> Void
-    let anchorChange: (UnitPoint) -> Void
-
-    init(minScale: CGFloat,
-         maxScale: CGFloat,
-         currentScale: CGFloat,
-         scaleChange: @escaping (CGFloat) -> Void,
-         anchorChange: @escaping (UnitPoint) -> Void) {
-        self.minScale = minScale
-        self.maxScale = maxScale
-        self.scale = currentScale
-        self.scaleChange = scaleChange
-        self.anchorChange = anchorChange
-        super.init(frame: .zero)
-        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(pinch(gesture:)))
-        pinchGesture.cancelsTouchesInView = false
-        addGestureRecognizer(pinchGesture)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError()
-    }
-
-    @objc private func pinch(gesture: UIPinchGestureRecognizer) {
-        switch gesture.state {
-        case .began:
-            isPinching = true
-            startScale = scale // Capture the current scale at the start of the pinch
-            // Calculate the anchor point based on gesture location
-            let location = gesture.location(in: self)
-            let anchor = UnitPoint(
-                x: location.x / bounds.width,
-                y: location.y / bounds.height
-            )
-            anchorChange(anchor)
-        case .changed, .ended:
-            let adjustedScale = startScale * gesture.scale // Apply the pinch changes relative to the startScale
-            if adjustedScale <= minScale {
-                scale = minScale
-            } else if adjustedScale >= maxScale {
-                scale = maxScale
-            } else {
-                scale = adjustedScale
-            }
-            scaleChange(scale)
-            if gesture.state == .ended {
-                startScale = scale // Update the startScale at the end of the pinch
-            }
-        case .cancelled, .failed:
-            isPinching = false
-            scale = startScale // Reset to startScale, not to 1.0
-        default:
-            break
-        }
-    }
-}
-
-struct PinchZoom: UIViewRepresentable {
-    let minScale: CGFloat
-    let maxScale: CGFloat
-    @Binding var scale: CGFloat
-    @Binding var isPinching: Bool
-    @Binding var anchor: UnitPoint
-
-    func makeUIView(context: Context) -> PinchZoomView {
-        let pinchZoomView = PinchZoomView(
-            minScale: minScale,
-            maxScale: maxScale,
-            currentScale: scale,
-            scaleChange: {
-                scale = $0
-            },
-            anchorChange: {
-                anchor = $0
-            }
-        )
-        return pinchZoomView
-    }
-
-    func updateUIView(_ pageControl: PinchZoomView, context: Context) {
-
-    }
-}
-
 struct PinchToZoom: ViewModifier {
     let minScale: CGFloat
     let maxScale: CGFloat
     @Binding var scale: CGFloat
+    @Binding var anchor: UnitPoint
     let contentSize: CGSize
-    @State var anchor: UnitPoint = .center
-    @State var isPinching: Bool = false
+
+    @State private var startScale: CGFloat = 1.0
+    @GestureState private var magnifyBy: CGFloat = 1.0
 
     func body(content: Content) -> some View {
-        content
-            .frame(width: contentSize.width, height: contentSize.height)
-            .scaleEffect(scale, anchor: anchor)
-            .frame(
-                width: contentSize.width * scale,
-                height: contentSize.height * scale
-            )
-            .overlay(
-                PinchZoom(minScale: minScale, maxScale: maxScale, scale: $scale, isPinching: $isPinching, anchor: $anchor)
-            )
+        GeometryReader { geometry in
+            content
+                .frame(width: contentSize.width, height: contentSize.height)
+                .scaleEffect(scale, anchor: anchor)
+                .frame(
+                    width: contentSize.width * scale,
+                    height: contentSize.height * scale
+                )
+                .gesture(
+                    MagnificationGesture()
+                        .updating($magnifyBy) { currentState, gestureState, _ in
+                            gestureState = currentState
+                        }
+                        .onChanged { value in
+                            let delta = value / magnifyBy
+                            let newScale = scale * delta
+
+                            if newScale >= minScale && newScale <= maxScale {
+                                scale = newScale
+                            } else if newScale < minScale {
+                                scale = minScale
+                            } else if newScale > maxScale {
+                                scale = maxScale
+                            }
+                        }
+                        .simultaneously(with: DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                // Calculate anchor point from touch location
+                                let x = value.location.x / geometry.size.width
+                                let y = value.location.y / geometry.size.height
+                                anchor = UnitPoint(x: x, y: y)
+                            }
+                        )
+                )
+        }
     }
 }
 
