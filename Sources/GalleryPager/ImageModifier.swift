@@ -1,14 +1,98 @@
 import SwiftUI
+import UIKit
 import Kingfisher
-import SwiftUIIntrospect
 
+// MARK: - ZoomableScrollView
+struct ZoomableScrollView<Content: View>: UIViewRepresentable {
+    let content: Content
+    @Binding var currentScale: CGFloat
+    let minScale: CGFloat
+    let maxScale: CGFloat
+
+    func makeUIView(context: Context) -> UIScrollView {
+        let scrollView = UIScrollView()
+        scrollView.delegate = context.coordinator
+        scrollView.minimumZoomScale = minScale
+        scrollView.maximumZoomScale = maxScale
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.alwaysBounceVertical = false
+        scrollView.alwaysBounceHorizontal = false
+        scrollView.bouncesZoom = true
+        scrollView.backgroundColor = .clear
+
+        let hostingController = UIHostingController(rootView: content)
+        hostingController.view.backgroundColor = .clear
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+
+        scrollView.addSubview(hostingController.view)
+
+        NSLayoutConstraint.activate([
+            hostingController.view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            hostingController.view.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            hostingController.view.heightAnchor.constraint(equalTo: scrollView.heightAnchor)
+        ])
+
+        context.coordinator.hostingController = hostingController
+        context.coordinator.scrollView = scrollView
+
+        return scrollView
+    }
+
+    func updateUIView(_ scrollView: UIScrollView, context: Context) {
+        context.coordinator.hostingController?.rootView = content
+
+        scrollView.minimumZoomScale = minScale
+        scrollView.maximumZoomScale = maxScale
+
+        // Update zoom scale if changed externally (e.g., double tap)
+        if abs(scrollView.zoomScale - currentScale) > 0.01 {
+            scrollView.setZoomScale(currentScale, animated: true)
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(currentScale: $currentScale)
+    }
+
+    class Coordinator: NSObject, UIScrollViewDelegate {
+        @Binding var currentScale: CGFloat
+        var hostingController: UIHostingController<Content>?
+        weak var scrollView: UIScrollView?
+
+        init(currentScale: Binding<CGFloat>) {
+            self._currentScale = currentScale
+        }
+
+        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+            return hostingController?.view
+        }
+
+        func scrollViewDidZoom(_ scrollView: UIScrollView) {
+            DispatchQueue.main.async { [weak self] in
+                self?.currentScale = scrollView.zoomScale
+            }
+
+            // Center the content when it's smaller than the scroll view
+            guard let hostedView = hostingController?.view else { return }
+
+            let offsetX = max((scrollView.bounds.width - scrollView.contentSize.width) / 2, 0)
+            let offsetY = max((scrollView.bounds.height - scrollView.contentSize.height) / 2, 0)
+
+            scrollView.contentInset = UIEdgeInsets(top: offsetY, left: offsetX, bottom: offsetY, right: offsetX)
+        }
+    }
+}
+
+// MARK: - ImageModifier
 struct ImageModifier: ViewModifier {
     private var contentSize: CGSize
     private var min: CGFloat = 1.0
     private var max: CGFloat = 3.0
     @State var currentScale: CGFloat = 1.0
-    @State var anchor: UnitPoint = .center
-    @State private var alwaysBounceVertical = false
 
     init(contentSize: CGSize) {
         self.contentSize = contentSize
@@ -27,73 +111,19 @@ struct ImageModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        ScrollView([.horizontal, .vertical], showsIndicators: false) {
-            content
-                .modifier(PinchToZoom(
-                    minScale: min,
-                    maxScale: max,
-                    scale: $currentScale,
-                    anchor: $anchor,
-                    contentSize: contentSize
-                ))
-        }
+        ZoomableScrollView(
+            content: content
+                .frame(width: contentSize.width, height: contentSize.height),
+            currentScale: $currentScale,
+            minScale: min,
+            maxScale: max
+        )
+        .frame(width: contentSize.width, height: contentSize.height)
         .gesture(doubleTapGesture)
-        .animation(.easeInOut, value: currentScale)
-        .introspect(.scrollView, on: .iOS(.v14, .v15, .v16, .v17)) { scrollView in
-            scrollView.alwaysBounceVertical = false
-        }
     }
 }
 
-struct PinchToZoom: ViewModifier {
-    let minScale: CGFloat
-    let maxScale: CGFloat
-    @Binding var scale: CGFloat
-    @Binding var anchor: UnitPoint
-    let contentSize: CGSize
-
-    @State private var startScale: CGFloat = 1.0
-    @GestureState private var magnifyBy: CGFloat = 1.0
-
-    func body(content: Content) -> some View {
-        GeometryReader { geometry in
-            content
-                .frame(width: contentSize.width, height: contentSize.height)
-                .scaleEffect(scale, anchor: anchor)
-                .frame(
-                    width: contentSize.width * scale,
-                    height: contentSize.height * scale
-                )
-                .gesture(
-                    MagnificationGesture()
-                        .updating($magnifyBy) { currentState, gestureState, _ in
-                            gestureState = currentState
-                        }
-                        .onChanged { value in
-                            let delta = value / magnifyBy
-                            let newScale = scale * delta
-
-                            if newScale >= minScale && newScale <= maxScale {
-                                scale = newScale
-                            } else if newScale < minScale {
-                                scale = minScale
-                            } else if newScale > maxScale {
-                                scale = maxScale
-                            }
-                        }
-                        .simultaneously(with: DragGesture(minimumDistance: 0)
-                            .onChanged { value in
-                                // Calculate anchor point from touch location
-                                let x = value.location.x / geometry.size.width
-                                let y = value.location.y / geometry.size.height
-                                anchor = UnitPoint(x: x, y: y)
-                            }
-                        )
-                )
-        }
-    }
-}
-
+// MARK: - KFImage Extension
 extension KFImage {
     @ViewBuilder
     func gesturesHandler(contentSize: CGSize) -> some View {
